@@ -51,11 +51,11 @@ public class TestSootLoggingHeap extends BodyTransformer {
 	    SootClass appclass = Scene.v().loadClassAndSupport(mainclass);
 	    Scene.v().setMainClass(appclass);
 		SootClass logClass = Scene.v().loadClassAndSupport("Log");
-//		logFieldAccMethod = logClass.getMethod("void logFieldAcc(java.lang.Object,java.lang.String,boolean,boolean)").makeRef();
-//	    Scene.v().loadNecessaryClasses();
-
-		logFieldAccValueMethod = logClass.getMethod("void logFieldAccValue(java.lang.Object,java.lang.String,boolean,boolean,java.lang.Object)").makeRef();
+		logFieldAccMethod = logClass.getMethod("void logFieldAcc(java.lang.Object,java.lang.String,boolean,boolean)").makeRef();
 	    Scene.v().loadNecessaryClasses();
+
+//		logFieldAccValueMethod = logClass.getMethod("void logFieldAccValue(java.lang.Object,java.lang.String,boolean,boolean,java.lang.Object)").makeRef();
+//	    Scene.v().loadNecessaryClasses();
 
         //start working
 	    PackManager.v().runPacks();
@@ -67,8 +67,8 @@ public class TestSootLoggingHeap extends BodyTransformer {
 	protected void internalTransform(Body b, String phaseName,
 		Map<String, String> options) {
 
-//      part 2
-//       we don't instrument Log class
+//      part 2 working
+//      we don't instrument Log class
 //		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
 //			Iterator<Unit> it = b.getUnits().snapshotIterator();
 //		    while(it.hasNext()){
@@ -90,35 +90,74 @@ public class TestSootLoggingHeap extends BodyTransformer {
 //		    }
 //		}
 		
-//      part 3 bonus part
-//      we don't instrument Log class
+//      part 2 object attempt
+//       we don't instrument Log class
 		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
 			Iterator<Unit> it = b.getUnits().snapshotIterator();
+			boolean flag = false;
 		    while(it.hasNext()){
+		    	boolean isWrite;
+		    	boolean isStatic;
+		    	String name;
+		    	List<Value> args;
+		    	
 		    	Stmt stmt = (Stmt)it.next();
-				if (stmt.containsFieldRef()) {
-					String name = stmt.getFieldRef().getField().toString();
-					boolean isStatic = stmt.getFieldRef().getField().isStatic();
-					boolean isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
-					List<Value> args = new ArrayList<>();
+		    	
+		    	if (stmt.containsFieldRef()) {
+					
+					name = stmt.getFieldRef().getField().toString();
+					isStatic = stmt.getFieldRef().getField().isStatic();
+					isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
+					args = new ArrayList<>();
 					Object o = stmt.getFieldRef().getField().getClass();
+					
+					if(!isStatic) {
+						Local locThis = Jimple.v().newLocal("this", b.getMethod().getDeclaringClass().getType());
+						b.getLocals().add(locThis);
+						b.getUnits().add(Jimple.v().newIdentityStmt(locThis, Jimple.v().newThisRef(b.getMethod().getDeclaringClass().getType())));
+						o = b.getThisLocal();
+					}					
 					args.add(StringConstant.v(o.toString()));
 					args.add(StringConstant.v(name));
 					args.add(DIntConstant.v(isStatic?1:0, BooleanType.v()));
 					args.add(DIntConstant.v(isWrite?1:0, BooleanType.v()));
-					List<ValueBox> box = stmt.getUseBoxes();
-					
-//					System.out.println(stmt + " " + isStatic);
-//					for(ValueBox v: box) {
-//						System.out.println(v.getValue());
-//					}
-					
-					args.add(StringConstant.v(box.toString()));
-					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccValueMethod, args);
+
+					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccMethod, args);					
 					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(printExpr);
 					b.getUnits().insertBefore(invokeStmt, stmt);
 				}
 		    }
 		}
+		
+//      part 3 bonus part
+//      we don't instrument Log class
+//		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
+//			Iterator<Unit> it = b.getUnits().snapshotIterator();
+//		    while(it.hasNext()){
+//		    	Stmt stmt = (Stmt)it.next();
+//				if (stmt.containsFieldRef()) {
+//					String name = stmt.getFieldRef().getField().toString();
+//					boolean isStatic = stmt.getFieldRef().getField().isStatic();
+//					boolean isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
+//					List<Value> args = new ArrayList<>();
+//					Object o = stmt.getFieldRef().getField().getClass();
+//					args.add(StringConstant.v(o.toString()));
+//					args.add(StringConstant.v(name));
+//					args.add(DIntConstant.v(isStatic?1:0, BooleanType.v()));
+//					args.add(DIntConstant.v(isWrite?1:0, BooleanType.v()));
+//					List<ValueBox> box = stmt.getUseBoxes();
+//					
+////					System.out.println(stmt + " " + isStatic);
+////					for(ValueBox v: box) {
+////						System.out.println(v.getValue());
+////					}
+//					
+//					args.add(StringConstant.v(box.toString()));
+//					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccValueMethod, args);
+//					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(printExpr);
+//					b.getUnits().insertBefore(invokeStmt, stmt);
+//				}
+//		    }
+//		}
 	}
 }
