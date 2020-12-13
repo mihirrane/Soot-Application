@@ -11,8 +11,8 @@ The steps to install are specified in the link.
 
 Files:
 
-1. java
-2. java
+a)	TestSoot.java
+b)	HelloThread.java
 
 **Part 1: Control Flow Analysis - Finding Denominators**
 
@@ -20,9 +20,10 @@ Follow along and perform the steps to get an understanding of Soot
 
 Files:
 
-1. java
-2. java
-3. java
+a)	TestDominatorFinder.java
+b)	DominatorFinder.java
+c)	GCD.java
+
 
 **Part 2: Data Flow Analysis - Call Graph Construction**
 
@@ -30,8 +31,8 @@ This is also a follow along part to introduce Call Graph Construction and orient
 
 Files:
 
-1. java
-2. java
+  a)	Example.java
+  b)	TestSootCallGraph.java
 
 **Part 3: Program Instrumentation with Soot**
 
@@ -43,8 +44,9 @@ This is a follow along to understand logging of method calls. Follow the steps m
 
  Files:
 
-1. java
-2. java
+    a)	Example.java
+    b)	TestSootLogging.java
+
 
 1. Tracing Heap Access
 
@@ -52,17 +54,17 @@ This is a follow along to understand logging of method calls. Follow the steps m
 
  Files:
 
-1. java
-2. java
-3. java
+    a)	Log.java
+    b)	HelloThread.java
+    c)	TestSootLoggingHeap.java
 
 There are two tasks to accomplish:
 
-1. Instrument HelloThread.java to find:
+   a) Instrument HelloThread.java to find:
 
-- Variable is static or not
-- Variable is read or being written to
-- Object name
+      - Variable is static or not
+      - Variable is read or being written to
+      - Object name
 
 You can find the code starting from line number 71 in TestSootLoggingHeap.java under the comment &quot;part 2 working&quot;
 
@@ -71,11 +73,11 @@ You can find the code starting from line number 71 in TestSootLoggingHeap.java u
 
 Note: ArithmeticException is due to the race condition
 
-1. Instrument HelloThread.java to find:
+   b) Instrument HelloThread.java to find:
 
-- Variable is static or not
-- Variable is read or being written to
-- Object name
-- Value of the object
+      - Variable is static or not
+      - Variable is read or being written to
+      - Object name
+      - Value of the object
 
 This part is not completed. Pull requests are welcome!
