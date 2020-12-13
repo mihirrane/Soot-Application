@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,6 +24,7 @@ import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.options.Options;
+import soot.jimple.ThisRef;
 
 public class TestSootLoggingHeap extends BodyTransformer {
 
@@ -54,9 +56,6 @@ public class TestSootLoggingHeap extends BodyTransformer {
 		logFieldAccMethod = logClass.getMethod("void logFieldAcc(java.lang.Object,java.lang.String,boolean,boolean)").makeRef();
 	    Scene.v().loadNecessaryClasses();
 
-//		logFieldAccValueMethod = logClass.getMethod("void logFieldAccValue(java.lang.Object,java.lang.String,boolean,boolean,java.lang.Object)").makeRef();
-//	    Scene.v().loadNecessaryClasses();
-
         //start working
 	    PackManager.v().runPacks();
 
@@ -69,95 +68,37 @@ public class TestSootLoggingHeap extends BodyTransformer {
 
 //      part 2 working
 //      we don't instrument Log class
-//		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
-//			Iterator<Unit> it = b.getUnits().snapshotIterator();
-//		    while(it.hasNext()){
-//		    	Stmt stmt = (Stmt)it.next();
-//				if (stmt.containsFieldRef()) {
-//					String name = stmt.getFieldRef().getField().toString();
-//					boolean isStatic = stmt.getFieldRef().getField().isStatic();
-//					boolean isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
-//					List<Value> args = new ArrayList<>();
-//					Object o = stmt.getFieldRef().getField().getClass();
-//					args.add(StringConstant.v(o.toString()));
-//					args.add(StringConstant.v(name));
-//					args.add(DIntConstant.v(isStatic?1:0, BooleanType.v()));
-//					args.add(DIntConstant.v(isWrite?1:0, BooleanType.v()));
-//					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccMethod, args);
-//					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(printExpr);
-//					b.getUnits().insertBefore(invokeStmt, stmt);
-//				}
-//		    }
-//		}
-		
-//      part 2 object attempt
-//       we don't instrument Log class
 		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
 			Iterator<Unit> it = b.getUnits().snapshotIterator();
-			boolean flag = false;
 		    while(it.hasNext()){
-		    	boolean isWrite;
-		    	boolean isStatic;
-		    	String name;
-		    	List<Value> args;
-		    	
 		    	Stmt stmt = (Stmt)it.next();
-		    	
-		    	if (stmt.containsFieldRef()) {
-					
-					name = stmt.getFieldRef().getField().toString();
-					isStatic = stmt.getFieldRef().getField().isStatic();
-					isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
-					args = new ArrayList<>();
+				if (stmt.containsFieldRef()) {
+					// find name of the field
+					String name = stmt.getFieldRef().getField().toString();
+					// check if the field is static
+					boolean isStatic = stmt.getFieldRef().getField().isStatic();
+					// check if the field is being written onto
+					boolean isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
+					// reference of the object 
 					Object o = stmt.getFieldRef().getField().getClass();
 					
-					if(!isStatic) {
-						Local locThis = Jimple.v().newLocal("this", b.getMethod().getDeclaringClass().getType());
-						b.getLocals().add(locThis);
-						b.getUnits().add(Jimple.v().newIdentityStmt(locThis, Jimple.v().newThisRef(b.getMethod().getDeclaringClass().getType())));
-						o = b.getThisLocal();
-					}					
+					// list of arguments to passes to the log class
+					List<Value> args = new ArrayList<>();
+					
+					// adding all arguments required by LogFieldAccMethod
 					args.add(StringConstant.v(o.toString()));
 					args.add(StringConstant.v(name));
 					args.add(DIntConstant.v(isStatic?1:0, BooleanType.v()));
 					args.add(DIntConstant.v(isWrite?1:0, BooleanType.v()));
-
-					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccMethod, args);					
+					
+					// Call LogAccFieldMethod
+					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccMethod, args);
 					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(printExpr);
+					
+					// Add this static Invoke Method before actual code in HelloThread
 					b.getUnits().insertBefore(invokeStmt, stmt);
 				}
 		    }
 		}
-		
-//      part 3 bonus part
-//      we don't instrument Log class
-//		if(!b.getMethod().getDeclaringClass().getName().equals("Log")){	
-//			Iterator<Unit> it = b.getUnits().snapshotIterator();
-//		    while(it.hasNext()){
-//		    	Stmt stmt = (Stmt)it.next();
-//				if (stmt.containsFieldRef()) {
-//					String name = stmt.getFieldRef().getField().toString();
-//					boolean isStatic = stmt.getFieldRef().getField().isStatic();
-//					boolean isWrite = (((DefinitionStmt)stmt).getLeftOp() instanceof FieldRef);
-//					List<Value> args = new ArrayList<>();
-//					Object o = stmt.getFieldRef().getField().getClass();
-//					args.add(StringConstant.v(o.toString()));
-//					args.add(StringConstant.v(name));
-//					args.add(DIntConstant.v(isStatic?1:0, BooleanType.v()));
-//					args.add(DIntConstant.v(isWrite?1:0, BooleanType.v()));
-//					List<ValueBox> box = stmt.getUseBoxes();
-//					
-////					System.out.println(stmt + " " + isStatic);
-////					for(ValueBox v: box) {
-////						System.out.println(v.getValue());
-////					}
-//					
-//					args.add(StringConstant.v(box.toString()));
-//					InvokeExpr printExpr = Jimple.v().newStaticInvokeExpr(logFieldAccValueMethod, args);
-//					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(printExpr);
-//					b.getUnits().insertBefore(invokeStmt, stmt);
-//				}
-//		    }
-//		}
 	}
 }

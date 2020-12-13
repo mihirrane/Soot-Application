@@ -4,7 +4,7 @@ public class Log {
 		if(isStatic)
 			System.out.println("Thread "+Thread.currentThread().getName()+(isWrite?" wrote":" read")+ " static field "+name);
 		else
-			System.out.println("Thread "+Thread.currentThread().getName()+(isWrite?" wrote":" read")+ " instance field "+name+" of object "+ o);
+			System.out.println("Thread "+Thread.currentThread().getName()+(isWrite?" wrote":" read")+ " instance field "+name+" of object "+ Thread.currentThread());
 	}
 
 	public static void logFieldAccValue(final Object o, String name, final boolean isStatic, final boolean isWrite, final Object v)
