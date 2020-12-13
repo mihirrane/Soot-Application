@@ -6,6 +6,7 @@ The steps followed in this assignment are present here: https://o2lab.github.io/
 **Part 0: Installation and setup**
 
 I have used Eclipse Kepler and soot-3.3.0
+Add jar file to Referenced libraries and remove the classpath file from this repository clone.
 
 The steps to install are specified in the link.
 
