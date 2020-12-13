@@ -69,7 +69,7 @@ There are two tasks to accomplish:
 You can find the code starting from line number 71 in TestSootLoggingHeap.java under the comment &quot;part 2 working&quot;
 
  After executing the code, the output will look like this
- ![](RackMultipart20201213-4-15nel12_html_b78b2ff1f73f0662.png)
+ ![](Images/output.jpg)
 
 Note: ArithmeticException is due to the race condition
 
